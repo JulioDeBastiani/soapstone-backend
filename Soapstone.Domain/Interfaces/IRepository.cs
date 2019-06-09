@@ -5,14 +5,15 @@ using System.Threading.Tasks;
 
 namespace Soapstone.Domain.Interfaces
 {
-    public interface IInterface<T> where T : Entity
+    public interface IRepository<TEntity> where TEntity : Entity
     {
-        Task<int> AddAsync(T entity);
-        Task<int> UpdateAsync(T entity);
-        Task<int> DeleteAsync(T entity);
-        Task<IEnumerable<T>> GetPage(int skip, int take);
-        Task<IQueryable<T>> GetQueryable();
-        Task<T> GetById(Guid id);
+        Task<int> AddAsync(TEntity entity);
+        Task<int> UpdateAsync(TEntity entity);
+        Task<int> DeleteAsync(TEntity entity);
+        // TODO Extract defaults
+        Task<IEnumerable<TEntity>> GetPage(int skip = 0, int take = 25);
+        Task<IQueryable<TEntity>> GetQueryable();
+        Task<TEntity> GetById(Guid id);
 
     }
 }

@@ -8,6 +8,7 @@ namespace Soapstone.Domain
         public string Email { get; private set; }
         public string Password { get; private set; }
 
+        public ICollection<Post> Posts { get; private set; }
         public ICollection<Upvote> Upvotes { get; private set; }
         public ICollection<Downvote> Downvotes { get; private set; }
         public ICollection<SavedPost> SavedPosts { get; private set; }
@@ -23,6 +24,7 @@ namespace Soapstone.Domain
             Email = email;
             Password = password; // TODO hash
 
+            Posts = new List<Post>();
             Upvotes = new List<Upvote>();
             Downvotes = new List<Downvote>();
             SavedPosts = new List<SavedPost>();

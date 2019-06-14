@@ -11,6 +11,7 @@ namespace Soapstone.Domain
         public string ImageUrl { get; private set;}
         public double Latitude { get; private set; }
         public double Longitude { get; private set; }
+        public DateTime CreatedAt { get; private set; }
         public bool Deleted { get; private set; }
 
         public ICollection<Upvote> Upvotes { get; private set; }
@@ -33,6 +34,7 @@ namespace Soapstone.Domain
             ImageUrl = imageUrl;
             Latitude = latitude;
             Longitude = longitude;
+            CreatedAt = DateTime.UtcNow;
             Deleted = false;
 
             Upvotes = new List<Upvote>();

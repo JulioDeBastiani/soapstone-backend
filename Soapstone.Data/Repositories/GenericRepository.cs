@@ -23,36 +23,41 @@ namespace Soapstone.Data
             return await _context.SaveChangesAsync();
         }
 
-        public async Task<int> UpdateAsync(TEntity entity)
+        public Task<int> UpdateAsync(TEntity entity)
         {
             _context.Set<TEntity>().Update(entity);
-            return await _context.SaveChangesAsync();
+            return _context.SaveChangesAsync();
         }
 
-        public async Task<int> DeleteAsync(TEntity entity)
+        public Task<int> DeleteAsync(TEntity entity)
         {
             // TODO undeletable entities
             _context.Set<TEntity>().Remove(entity);
-            return await _context.SaveChangesAsync();
+            return _context.SaveChangesAsync();
         }
 
         // TODO Extract defaults
         // TODO skip/take consistency
         // TODO predicate/include if needed
-        public Task<IEnumerable<TEntity>> GetPage(int skip = 0, int take = 25)
+        public Task<IEnumerable<TEntity>> GetPageAsync(Func<TEntity, bool> predicate, int skip = 0, int take = 25)
         {
+            var query = _context.Set<TEntity>().AsQueryable();
+
+            if (predicate != null)
+                query = query.Where(predicate).AsQueryable();
+
             return Task.FromResult(_context.Set<TEntity>().Skip(skip).Take(take).AsEnumerable());
         }
 
-        public Task<IQueryable<TEntity>> GetQueryable()
+        public Task<IQueryable<TEntity>> GetQueryableAsync()
         {
             return Task.FromResult(_context.Set<TEntity>().AsQueryable());
         }
 
         // TODO include if needed
-        public async Task<TEntity> GetById(Guid id)
+        public Task<TEntity> GetByIdAsync(Guid id)
         {
-            return await _context.Set<TEntity>().SingleOrDefaultAsync(e => e.Id == id);
+            return _context.Set<TEntity>().SingleOrDefaultAsync(e => e.Id == id);
         }
     }
 }

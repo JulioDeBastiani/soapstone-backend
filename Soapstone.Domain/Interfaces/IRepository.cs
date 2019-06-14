@@ -11,9 +11,9 @@ namespace Soapstone.Domain.Interfaces
         Task<int> UpdateAsync(TEntity entity);
         Task<int> DeleteAsync(TEntity entity);
         // TODO Extract defaults
-        Task<IEnumerable<TEntity>> GetPage(int skip = 0, int take = 25);
-        Task<IQueryable<TEntity>> GetQueryable();
-        Task<TEntity> GetById(Guid id);
+        Task<IEnumerable<TEntity>> GetPageAsync(Func<TEntity, bool> predicate, int skip = 0, int take = 25);
+        Task<IQueryable<TEntity>> GetQueryableAsync();
+        Task<TEntity> GetByIdAsync(Guid id);
 
     }
 }

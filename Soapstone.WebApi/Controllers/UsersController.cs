@@ -124,7 +124,6 @@ namespace Soapstone.WebApi.Controllers
         /// <returns></returns>
         // TODO change rerponse to created
         [HttpPost]
-        [Authorize]
         public Task<ActionResult<UserViewModel>> PostAsync([FromBody] UserInputModel inputModel)
             => ExecuteAsync<UserViewModel>(async () =>
             {

@@ -16,5 +16,14 @@ namespace Soapstone.Data
         public ApplicationDbContext(DbContextOptions options) : base(options)
         {
         }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<User>()
+                .HasIndex(u => u.Username)
+                .IsUnique();
+
+            base.OnModelCreating(modelBuilder);
+        }
     }
 }

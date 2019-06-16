@@ -2,7 +2,7 @@ using System;
 
 namespace Soapstone.Domain
 {
-    public class SavedPost
+    public class SavedPost : Entity
     {
         public Guid UserId { get; private set; }
         public User User { get; private set; }

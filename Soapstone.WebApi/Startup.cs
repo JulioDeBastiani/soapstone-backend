@@ -42,8 +42,6 @@ namespace Soapstone.WebApi
                 c.IncludeXmlComments(xmlPath);
             });
 
-            // TODO base controllers/mvc
-            // TODO swagger
             // TODO tokens
             // TODO serilog
             // TODO mock mysql

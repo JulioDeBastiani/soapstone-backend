@@ -9,7 +9,6 @@ namespace Soapstone.Domain
         public string Username { get; private set; }
         public string Email { get; private set; }
         public string Password { get; private set; }
-        public DateTime CreatedAt { get; private set; }
         // TODO logic deletion
 
         public ICollection<Post> Posts { get; private set; }
@@ -28,7 +27,6 @@ namespace Soapstone.Domain
             Username = username;
             Email = email;
             SetPassword(password);
-            CreatedAt = DateTime.UtcNow;
 
             Posts = new List<Post>();
             Upvotes = new List<Upvote>();

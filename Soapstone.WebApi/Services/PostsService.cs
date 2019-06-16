@@ -1,0 +1,141 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
+using Soapstone.Domain;
+using Soapstone.Domain.Defaults;
+using Soapstone.Domain.Interfaces;
+using Soapstone.WebApi.InputModels;
+using Soapstone.WebApi.ViewModels;
+
+namespace Soapstone.WebApi.Services
+{
+    public class PostsService
+    {
+        private IRepository<Post> _postsRepository;
+
+        public PostsService(IRepository<Post> postsRepository)
+        {
+            _postsRepository = postsRepository;
+        }
+
+        public async Task<IEnumerable<PostViewModel>> GetNearbyPostsAsync(PostsPageInputModel inputModel)
+        {
+            if (inputModel == null)
+                throw new ArgumentNullException(nameof(inputModel));
+
+            var skip = inputModel.Skip ?? PaginationDefaults.DefaultSkip;
+            var take = inputModel.Take ?? PaginationDefaults.DefaultTake;
+
+            var posts = await _postsRepository
+                .GetPageAsync(
+                    p =>
+                        p.Latitude < inputModel.Latitude + inputModel.Latitude * 0.0005
+                        && p.Latitude > inputModel.Latitude - inputModel.Latitude * 0.0005
+                        && p.Longitude < inputModel.Longitude + inputModel.Longitude * 0.0005
+                        && p.Longitude > inputModel.Longitude - inputModel.Longitude * 0.0005,
+                    p => p.Rating,
+                    p => p
+                        .Include(e => e.Upvotes)
+                        .Include(e => e.Downvotes)
+                        .Include(e => e.SavedBy)
+                        .Include(e => e.Reports),
+                    skip,
+                    take);
+
+            var viewModels = new List<PostViewModel>();
+
+            foreach (var post in posts)
+            {
+                var viewModel = (PostViewModel) post;
+                viewModel.Upvoted = post.Upvotes.Any(u => u.UserId == inputModel.UserId);
+                viewModel.Downvoted = post.Downvotes.Any(d => d.UserId == inputModel.UserId);
+                viewModel.Saved = post.SavedBy.Any(s => s.UserId == inputModel.UserId);
+                viewModel.Reported = post.Upvotes.Any(r => r.UserId == inputModel.UserId);
+            }
+
+            return viewModels;
+        }
+
+        public async Task UpvoteAsync(Guid postId, Guid userId)
+        {
+            var post = await _postsRepository.GetByIdAsync(postId, p => p
+                .Include(e => e.Upvotes)
+                .Include(e => e.Downvotes));
+
+            var upvote = post.Upvotes.SingleOrDefault(u => u.UserId == userId);
+
+            if (upvote == null)
+            {
+                upvote = new Upvote(userId, postId);
+                post.Upvotes.Add(upvote);
+            }
+            else
+                post.Upvotes.Remove(upvote);
+
+            // TODO test to see if it is necessary to use an upvotes repository
+            post.UpdateRating();
+            await _postsRepository.UpdateAsync(post);
+        }
+
+        public async Task DownvoteAsync(Guid postId, Guid userId)
+        {
+            var post = await _postsRepository.GetByIdAsync(postId, p => p
+                .Include(e => e.Upvotes)
+                .Include(e => e.Downvotes));
+
+            var downvote = post.Downvotes.SingleOrDefault(u => u.UserId == userId);
+
+            if (downvote == null)
+            {
+                downvote = new Downvote(userId, postId);
+                post.Downvotes.Add(downvote);
+            }
+            else
+                post.Downvotes.Remove(downvote);
+
+            // TODO test to see if it is necessary to use an downvotes repository
+            post.UpdateRating();
+            await _postsRepository.UpdateAsync(post);
+        }
+
+        public async Task SaveAsync(Guid postId, Guid userId)
+        {
+            var post = await _postsRepository.GetByIdAsync(postId, p => p
+                .Include(e => e.SavedBy));
+
+            var saved = post.SavedBy.SingleOrDefault(u => u.UserId == userId);
+
+            if (saved == null)
+            {
+                saved = new SavedPost(userId, postId);
+                post.SavedBy.Add(saved);
+            }
+            else
+                post.SavedBy.Remove(saved);
+
+            // TODO test to see if it is necessary to use an downvotes repository
+            await _postsRepository.UpdateAsync(post);
+        }
+
+        public async Task ReportAsync(Guid postId, Guid userId)
+        {
+            var post = await _postsRepository.GetByIdAsync(postId, p => p
+                .Include(e => e.Reports));
+
+            var report = post.Reports.SingleOrDefault(u => u.UserId == userId);
+
+            if (report == null)
+            {
+                report = new Report(userId, postId);
+                post.Reports.Add(report);
+            }
+            else
+                post.Reports.Remove(report);
+
+            // TODO test to see if it is necessary to use an downvotes repository
+            await _postsRepository.UpdateAsync(post);
+        }
+    }
+}

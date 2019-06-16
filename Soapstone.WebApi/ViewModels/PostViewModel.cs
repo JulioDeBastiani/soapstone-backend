@@ -12,6 +12,10 @@ namespace Soapstone.WebApi.ViewModels
         public double Latitude { get; set; }
         public double Longitude { get; set; }
         public DateTime CreatedAt { get; set; }
+        public bool Upvoted { get; set; }
+        public bool Downvoted { get; set; }
+        public bool Saved { get; set; }
+        public bool Reported { get; set; }
 
         public static implicit operator PostViewModel(Post post)
         {
@@ -23,7 +27,11 @@ namespace Soapstone.WebApi.ViewModels
                 ImageUrl = post.ImageUrl,
                 Latitude = post.Latitude,
                 Longitude = post.Longitude,
-                CreatedAt = post.CreatedAt
+                CreatedAt = post.CreatedAt,
+                Upvoted = false,
+                Downvoted = false,
+                Saved = false,
+                Reported = false
             };
         }
     }

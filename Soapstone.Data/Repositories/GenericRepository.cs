@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Query;
 using Soapstone.Domain;
+using Soapstone.Domain.Defaults;
 using Soapstone.Domain.Interfaces;
 
 namespace Soapstone.Data
@@ -36,15 +38,23 @@ namespace Soapstone.Data
             return _context.SaveChangesAsync();
         }
 
-        // TODO Extract defaults
-        // TODO skip/take consistency
-        // TODO predicate/include if needed
-        public Task<IEnumerable<TEntity>> GetPageAsync(Func<TEntity, bool> predicate, int skip = 0, int take = 25)
+        // TODO include if needed
+        public Task<IEnumerable<TEntity>> GetPageAsync(Func<TEntity, bool> predicate, Func<TEntity, object> orderBy, Func<IQueryable<TEntity>, IIncludableQueryable<TEntity, object>> includes, int skip = PaginationDefaults.DefaultSkip, int take = PaginationDefaults.DefaultTake)
         {
             var query = _context.Set<TEntity>().AsQueryable();
 
+            skip = skip < 0 ? 0 : skip;
+            take = take < 0 ? 0 : take;
+            take = take > PaginationDefaults.DefaultMaxTake ? PaginationDefaults.DefaultMaxTake : take;
+
             if (predicate != null)
                 query = query.Where(predicate).AsQueryable();
+
+            if (includes != null)
+                query = includes(query);
+
+            if (orderBy != null)
+                query = query.OrderBy(orderBy).AsQueryable();
 
             return Task.FromResult(_context.Set<TEntity>().Skip(skip).Take(take).AsEnumerable());
         }
@@ -54,10 +64,14 @@ namespace Soapstone.Data
             return Task.FromResult(_context.Set<TEntity>().AsQueryable());
         }
 
-        // TODO include if needed
-        public Task<TEntity> GetByIdAsync(Guid id)
+        public Task<TEntity> GetByIdAsync(Guid id, Func<IQueryable<TEntity>, IIncludableQueryable<TEntity, object>> includes)
         {
-            return _context.Set<TEntity>().SingleOrDefaultAsync(e => e.Id == id);
+            var queryable = _context.Set<TEntity>().AsQueryable();
+
+            if (includes != null)
+                queryable = includes(queryable);
+
+            return queryable.SingleOrDefaultAsync(e => e.Id == id);
         }
     }
 }

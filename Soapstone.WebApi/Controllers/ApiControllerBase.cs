@@ -5,9 +5,9 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Soapstone.WebApi.Controllers
 {
-    public class ApiControllerBase : ControllerBase
+    public abstract class ApiControllerBase : ControllerBase
     {
-        public async Task<ActionResult<T>> ExecuteAsync<T>(Func<Task<ActionResult<T>>> functionAsync)
+        protected async Task<ActionResult<T>> ExecuteAsync<T>(Func<Task<ActionResult<T>>> functionAsync)
         {
             try
             {
@@ -26,7 +26,7 @@ namespace Soapstone.WebApi.Controllers
             }
         }
 
-        public async Task<ActionResult> ExecuteAsync(Func<Task<ActionResult>> functionAsync)
+        protected async Task<ActionResult> ExecuteAsync(Func<Task<ActionResult>> functionAsync)
         {
             try
             {

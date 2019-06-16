@@ -1,16 +1,22 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Reflection;
-using System.Threading.Tasks;
+using System.Text;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
 using Soapstone.Data;
+using Soapstone.Domain;
+using Soapstone.Domain.Interfaces;
+using Soapstone.WebApi.Security;
+using Soapstone.WebApi.Services;
 using Swashbuckle.AspNetCore.Swagger;
 
 namespace Soapstone.WebApi
@@ -31,7 +37,57 @@ namespace Soapstone.WebApi
             services.AddDbContext<ApplicationDbContext>(op => op
                 .UseMySql(_config.GetConnectionString("Soapstone")));
 
-            services.AddMvc();
+            services.AddScoped<IRepository<User>, GenericRepository<User>>();
+            services.AddScoped<IRepository<Post>, GenericRepository<Post>>();
+            services.AddScoped<IRepository<Upvote>, GenericRepository<Upvote>>();
+            services.AddScoped<IRepository<Downvote>, GenericRepository<Downvote>>();
+            services.AddScoped<IRepository<SavedPost>, GenericRepository<SavedPost>>();
+            services.AddScoped<IRepository<Report>, GenericRepository<Report>>();
+
+            services.AddScoped<PostsService>();
+
+            services.AddMvc()
+                .SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
+
+            var tokenSettings = new TokenSettings();
+            var tokenConfigurator = new ConfigureFromConfigurationOptions<TokenSettings>(_config.GetSection("TokenSettings"));
+            tokenConfigurator.Configure(tokenSettings);
+
+            var key = Encoding.ASCII.GetBytes(tokenSettings.SecretKey);
+
+            services.AddAuthentication(o =>
+                {
+                    o.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                    o.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+                })
+                .AddJwtBearer(o =>
+                {
+                    // o.TokenValidationParameters.IssuerSigningKey = rsaKeyManager.RestoreKey();
+                    o.TokenValidationParameters.ValidAudience = tokenSettings.Audience;
+                    o.TokenValidationParameters.ValidIssuer = tokenSettings.Issuer;
+                    // o.TokenValidationParameters.ValidateIssuerSigningKey = true;
+                    // o.TokenValidationParameters.ValidateAudience = true;
+                    // o.TokenValidationParameters.ValidateLifetime = true;
+                    // o.TokenValidationParameters.ValidateIssuer = true;
+                    // o.RequireHttpsMetadata = true;
+                    o.RequireHttpsMetadata = false;
+                    o.SaveToken = true;
+                    o.TokenValidationParameters = new TokenValidationParameters
+                    {
+                        ValidateIssuerSigningKey = true,
+                        IssuerSigningKey = new SymmetricSecurityKey(key),
+                        ValidateIssuer = false,
+                        ValidateAudience = false
+                    };
+                });
+
+            services.AddAuthorization(o =>
+                {
+                    o.DefaultPolicy = new AuthorizationPolicyBuilder()
+                        .RequireAuthenticatedUser()
+                        // .RequireClaim("user-id")
+                        .Build();
+                });
 
             services.AddSwaggerGen(c =>
             {
@@ -46,8 +102,6 @@ namespace Soapstone.WebApi
             // TODO serilog
             // TODO mock mysql
             // TODO first migration
-            // TODO finalize routes
-            // TODO posts by lat/long
             // TODO post lifespan on map
         }
 
@@ -63,6 +117,7 @@ namespace Soapstone.WebApi
             });
 
             app.UseMvc();
+            app.UseAuthentication();
         }
     }
 }

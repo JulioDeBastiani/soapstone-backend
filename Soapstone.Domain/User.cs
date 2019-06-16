@@ -58,5 +58,14 @@ namespace Soapstone.Domain
             // TODO hash
             Password = newPassword;
         }
+
+        public bool ValidatePassword(string password)
+        {
+            if (string.IsNullOrWhiteSpace(password))
+                throw new ArgumentNullException(nameof(password));
+
+            // TODO hash
+            return Password == password;
+        }
     }
 }

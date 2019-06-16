@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Soapstone.Domain.Defaults;
 
@@ -24,5 +25,8 @@ namespace Soapstone.Domain.Interfaces
 
         public static async Task<bool> ExistsAsync<TEntity>(this IRepository<TEntity> repository, Guid id) where TEntity : Entity
             => (await repository.GetByIdAsync(id)) != null;
+
+        public static async Task<TEntity> SingleOrDefaultAsync<TEntity>(this IRepository<TEntity> repository, Func<TEntity, bool> predicate) where TEntity : Entity
+            => (await repository.GetQueryableAsync()).SingleOrDefault(predicate);
     }
 }

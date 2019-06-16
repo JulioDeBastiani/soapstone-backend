@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Soapstone.Domain;
@@ -37,6 +38,7 @@ namespace Soapstone.WebApi.Controllers
         /// <param name="inputModel">Page information</param>
         /// <returns></returns>
         [HttpGet]
+        [Authorize]
         public Task<ActionResult<IEnumerable<UserViewModel>>> GetUsersAsync([FromQuery] PageInputModel inputModel = null)
             => ExecuteAsync<IEnumerable<UserViewModel>>(async () =>
             {
@@ -57,6 +59,7 @@ namespace Soapstone.WebApi.Controllers
         /// <param name="id">Id of the user</param>
         /// <returns></returns>
         [HttpGet("{id}")]
+        [Authorize]
         public Task<ActionResult<UserViewModel>> GetUserAsync(Guid id)
             => ExecuteAsync<UserViewModel>(async () =>
             {
@@ -75,6 +78,7 @@ namespace Soapstone.WebApi.Controllers
         /// <param name="inputModel">Page information</param>
         /// <returns></returns>
         [HttpGet("{id}/posts")]
+        [Authorize]
         public Task<ActionResult<IEnumerable<PostViewModel>>> GetPostsAsync(Guid id, [FromQuery] PageInputModel inputModel = null)
             => ExecuteAsync<IEnumerable<PostViewModel>>(async () =>
             {
@@ -97,6 +101,7 @@ namespace Soapstone.WebApi.Controllers
         /// <param name="inputModel">Page information</param>
         /// <returns></returns>
         [HttpGet("{id}/saved")]
+        [Authorize]
         public Task<ActionResult<IEnumerable<PostViewModel>>> GetSavedAsync(Guid id, [FromQuery] PageInputModel inputModel = null)
             => ExecuteAsync<IEnumerable<PostViewModel>>(async () =>
             {
@@ -119,6 +124,7 @@ namespace Soapstone.WebApi.Controllers
         /// <returns></returns>
         // TODO change rerponse to created
         [HttpPost]
+        [Authorize]
         public Task<ActionResult<UserViewModel>> PostAsync([FromBody] UserInputModel inputModel)
             => ExecuteAsync<UserViewModel>(async () =>
             {
@@ -137,6 +143,7 @@ namespace Soapstone.WebApi.Controllers
         /// <param name="inputModel">New password</param>
         /// <returns></returns>
         [HttpPut("{id}")]
+        [Authorize]
         public Task<ActionResult> PutAsync(Guid id, [FromBody] ChangePasswordInputModel inputModel)
             => ExecuteAsync(async () =>
             {
@@ -158,6 +165,7 @@ namespace Soapstone.WebApi.Controllers
         /// <param name="id">Id of the user</param>
         /// <returns></returns>
         [HttpDelete("{id}")]
+        [Authorize]
         // TODO change to logical deletion
         public Task<ActionResult> DeleteAsync(Guid id)
             => ExecuteAsync(async () =>

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Soapstone.Domain;
 using Soapstone.Domain.Defaults;
@@ -34,6 +35,7 @@ namespace Soapstone.WebApi.Controllers
         /// <returns></returns>
         // TODO get user from claims
         [HttpGet]
+        [Authorize]
         public Task<ActionResult<IEnumerable<PostViewModel>>> GetPostsAsync([FromQuery] PostsPageInputModel inputModel)
             => ExecuteAsync<IEnumerable<PostViewModel>>(async () =>
             {
@@ -73,6 +75,7 @@ namespace Soapstone.WebApi.Controllers
         /// <returns></returns>
         // TODO change reponse to created
         [HttpPost]
+        [Authorize]
         public Task<ActionResult<PostViewModel>> PostAsync([FromBody] PostInputModel inputModel)
             => ExecuteAsync<PostViewModel>(async () =>
             {
@@ -91,6 +94,7 @@ namespace Soapstone.WebApi.Controllers
         /// <returns></returns>
         // TODO logical deletion
         [HttpDelete("{id}")]
+        [Authorize]
         public Task<ActionResult> DeleteAsync(Guid id)
             => ExecuteAsync(async () =>
             {
@@ -110,6 +114,7 @@ namespace Soapstone.WebApi.Controllers
         /// <param name="userId">Id of the user</param>
         /// <returns></returns>
         [HttpPut("{id}/upvote/{userId}")]
+        [Authorize]
         // TODO get user from claims
         public Task<ActionResult> UpvoteAsync(Guid id, Guid userId)
             => ExecuteAsync(async () =>
@@ -125,6 +130,7 @@ namespace Soapstone.WebApi.Controllers
         /// <param name="userId">Id of the user</param>
         /// <returns></returns>
         [HttpPut("{id}/downvote/{userId}")]
+        [Authorize]
         // TODO get user from claims
         public Task<ActionResult> DownvoteAsync(Guid id, Guid userId)
             => ExecuteAsync(async () =>
@@ -140,6 +146,7 @@ namespace Soapstone.WebApi.Controllers
         /// <param name="userId">Id of the user</param>
         /// <returns></returns>
         [HttpPut("{id}/save/{userId}")]
+        [Authorize]
         // TODO get user from claims
         public Task<ActionResult> SaveAsync(Guid id, Guid userId)
             => ExecuteAsync(async () =>
@@ -155,6 +162,7 @@ namespace Soapstone.WebApi.Controllers
         /// <param name="userId">Id of the user</param>
         /// <returns></returns>
         [HttpPut("{id}/report/{userId}")]
+        [Authorize]
         // TODO get user from claims
         public Task<ActionResult> ReportAsync(Guid id, Guid userId)
             => ExecuteAsync(async () =>

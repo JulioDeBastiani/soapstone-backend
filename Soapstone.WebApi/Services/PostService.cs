@@ -11,11 +11,11 @@ using Soapstone.WebApi.ViewModels;
 
 namespace Soapstone.WebApi.Services
 {
-    public class PostsService
+    public class PostService
     {
         private IRepository<Post> _postsRepository;
 
-        public PostsService(IRepository<Post> postsRepository)
+        public PostService(IRepository<Post> postsRepository)
         {
             _postsRepository = postsRepository;
         }

@@ -8,6 +8,7 @@ using Soapstone.Domain;
 using Soapstone.Domain.Defaults;
 using Soapstone.Domain.Interfaces;
 using Soapstone.WebApi.InputModels;
+using Soapstone.WebApi.Security;
 using Soapstone.WebApi.Services;
 using Soapstone.WebApi.ViewModels;
 
@@ -19,9 +20,9 @@ namespace Soapstone.WebApi.Controllers
     public class PostsController : ApiControllerBase
     {
         private IRepository<Post> _postsRepository;
-        private PostsService _postsService;
+        private PostService _postsService;
 
-        public PostsController(IRepository<Post> postsRepository, PostsService postsService)
+        public PostsController(IRepository<Post> postsRepository, PostService postsService)
         {
             _postsRepository = postsRepository;
             _postsService = postsService;
@@ -103,6 +104,11 @@ namespace Soapstone.WebApi.Controllers
                 if (post == null)
                     return NotFound();
 
+                var userId = User.Claims.First(c => c.Type == DefaultClaims.UserId).Value;
+
+                if (post.UserId.ToString() != userId)
+                    return BadRequest();
+
                 await _postsRepository.DeleteAsync(post);
                 return Ok();
             });
@@ -111,14 +117,13 @@ namespace Soapstone.WebApi.Controllers
         /// Upvotes a post
         /// </summary>
         /// <param name="id">Id of the post</param>
-        /// <param name="userId">Id of the user</param>
         /// <returns></returns>
-        [HttpPut("{id}/upvote/{userId}")]
+        [HttpPut("{id}/upvote")]
         [Authorize]
-        // TODO get user from claims
-        public Task<ActionResult> UpvoteAsync(Guid id, Guid userId)
+        public Task<ActionResult> UpvoteAsync(Guid id)
             => ExecuteAsync(async () =>
             {
+                var userId = Guid.Parse(User.Claims.First(c => c.Type == DefaultClaims.UserId).Value);
                 await _postsService.UpvoteAsync(id, userId);
                 return Ok();
             });
@@ -127,14 +132,13 @@ namespace Soapstone.WebApi.Controllers
         /// Downvotes a post
         /// </summary>
         /// <param name="id">Id of the post</param>
-        /// <param name="userId">Id of the user</param>
         /// <returns></returns>
-        [HttpPut("{id}/downvote/{userId}")]
+        [HttpPut("{id}/downvote")]
         [Authorize]
-        // TODO get user from claims
-        public Task<ActionResult> DownvoteAsync(Guid id, Guid userId)
+        public Task<ActionResult> DownvoteAsync(Guid id)
             => ExecuteAsync(async () =>
             {
+                var userId = Guid.Parse(User.Claims.First(c => c.Type == DefaultClaims.UserId).Value);
                 await _postsService.DownvoteAsync(id, userId);
                 return Ok();
             });
@@ -143,14 +147,13 @@ namespace Soapstone.WebApi.Controllers
         /// Saves a post
         /// </summary>
         /// <param name="id">Id of the post</param>
-        /// <param name="userId">Id of the user</param>
         /// <returns></returns>
-        [HttpPut("{id}/save/{userId}")]
+        [HttpPut("{id}/save")]
         [Authorize]
-        // TODO get user from claims
-        public Task<ActionResult> SaveAsync(Guid id, Guid userId)
+        public Task<ActionResult> SaveAsync(Guid id)
             => ExecuteAsync(async () =>
             {
+                var userId = Guid.Parse(User.Claims.First(c => c.Type == DefaultClaims.UserId).Value);
                 await _postsService.SaveAsync(id, userId);
                 return Ok();
             });
@@ -159,14 +162,13 @@ namespace Soapstone.WebApi.Controllers
         /// Report a post
         /// </summary>
         /// <param name="id">Id of the post</param>
-        /// <param name="userId">Id of the user</param>
         /// <returns></returns>
-        [HttpPut("{id}/report/{userId}")]
+        [HttpPut("{id}/report")]
         [Authorize]
-        // TODO get user from claims
-        public Task<ActionResult> ReportAsync(Guid id, Guid userId)
+        public Task<ActionResult> ReportAsync(Guid id)
             => ExecuteAsync(async () =>
             {
+                var userId = Guid.Parse(User.Claims.First(c => c.Type == DefaultClaims.UserId).Value);
                 await _postsService.ReportAsync(id, userId);
                 return Ok();
             });

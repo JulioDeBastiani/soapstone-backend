@@ -44,7 +44,7 @@ namespace Soapstone.WebApi
             services.AddScoped<IRepository<SavedPost>, GenericRepository<SavedPost>>();
             services.AddScoped<IRepository<Report>, GenericRepository<Report>>();
 
-            services.AddScoped<PostsService>();
+            services.AddScoped<PostService>();
 
             services.AddMvc()
                 .SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
@@ -62,14 +62,13 @@ namespace Soapstone.WebApi
                 })
                 .AddJwtBearer(o =>
                 {
-                    // o.TokenValidationParameters.IssuerSigningKey = rsaKeyManager.RestoreKey();
                     o.TokenValidationParameters.ValidAudience = tokenSettings.Audience;
                     o.TokenValidationParameters.ValidIssuer = tokenSettings.Issuer;
-                    // o.TokenValidationParameters.ValidateIssuerSigningKey = true;
-                    // o.TokenValidationParameters.ValidateAudience = true;
-                    // o.TokenValidationParameters.ValidateLifetime = true;
-                    // o.TokenValidationParameters.ValidateIssuer = true;
-                    // o.RequireHttpsMetadata = true;
+                    o.TokenValidationParameters.ValidateIssuerSigningKey = true;
+                    o.TokenValidationParameters.ValidateAudience = true;
+                    o.TokenValidationParameters.ValidateLifetime = true;
+                    o.TokenValidationParameters.ValidateIssuer = true;
+                    o.RequireHttpsMetadata = true;
                     o.RequireHttpsMetadata = false;
                     o.SaveToken = true;
                     o.TokenValidationParameters = new TokenValidationParameters
@@ -85,7 +84,7 @@ namespace Soapstone.WebApi
                 {
                     o.DefaultPolicy = new AuthorizationPolicyBuilder()
                         .RequireAuthenticatedUser()
-                        // .RequireClaim("user-id")
+                        .RequireClaim(DefaultClaims.UserId)
                         .Build();
                 });
 
@@ -98,7 +97,6 @@ namespace Soapstone.WebApi
                 c.IncludeXmlComments(xmlPath);
             });
 
-            // TODO tokens
             // TODO serilog
             // TODO mock mysql
             // TODO first migration

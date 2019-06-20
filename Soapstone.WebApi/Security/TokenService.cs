@@ -34,7 +34,7 @@ namespace Soapstone.WebApi.Security
                 throw new ArgumentException(nameof(password));
 
             var tokenHandler = new JwtSecurityTokenHandler();
-            var key = Encoding.ASCII.GetBytes(_settings.SecretKey);
+            var key = Convert.FromBase64String(_settings.SecretKey);
 
             var tokenDescriptor = new SecurityTokenDescriptor
             {
@@ -43,7 +43,10 @@ namespace Soapstone.WebApi.Security
                     new Claim(DefaultClaims.Username, user.Username),
                     new Claim(DefaultClaims.UserId, user.Id.ToString())
                 }),
+                IssuedAt = DateTime.UtcNow,
                 Expires = DateTime.UtcNow.AddYears(7),
+                Audience = _settings.Audience,
+                Issuer = _settings.Issuer,
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
             };
 

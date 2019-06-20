@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -45,15 +47,14 @@ namespace Soapstone.WebApi
             services.AddScoped<IRepository<Report>, GenericRepository<Report>>();
 
             services.AddScoped<PostService>();
-
-            services.AddMvc()
-                .SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
+            services.AddScoped<TokenService>();
 
             var tokenSettings = new TokenSettings();
             var tokenConfigurator = new ConfigureFromConfigurationOptions<TokenSettings>(_config.GetSection("TokenSettings"));
             tokenConfigurator.Configure(tokenSettings);
+            services.AddSingleton<TokenSettings>(tokenSettings);
 
-            var key = Encoding.ASCII.GetBytes(tokenSettings.SecretKey);
+            var key = Convert.FromBase64String(tokenSettings.SecretKey);
 
             services.AddAuthentication(o =>
                 {
@@ -62,21 +63,16 @@ namespace Soapstone.WebApi
                 })
                 .AddJwtBearer(o =>
                 {
-                    o.TokenValidationParameters.ValidAudience = tokenSettings.Audience;
-                    o.TokenValidationParameters.ValidIssuer = tokenSettings.Issuer;
-                    o.TokenValidationParameters.ValidateIssuerSigningKey = true;
-                    o.TokenValidationParameters.ValidateAudience = true;
-                    o.TokenValidationParameters.ValidateLifetime = true;
-                    o.TokenValidationParameters.ValidateIssuer = true;
-                    o.RequireHttpsMetadata = true;
                     o.RequireHttpsMetadata = false;
                     o.SaveToken = true;
                     o.TokenValidationParameters = new TokenValidationParameters
                     {
+                        ValidIssuer = tokenSettings.Issuer,
+                        ValidateIssuer = true,
+                        ValidAudience = tokenSettings.Audience,
+                        ValidateAudience = true,
                         ValidateIssuerSigningKey = true,
-                        IssuerSigningKey = new SymmetricSecurityKey(key),
-                        ValidateIssuer = false,
-                        ValidateAudience = false
+                        IssuerSigningKey = new SymmetricSecurityKey(key)
                     };
                 });
 
@@ -88,9 +84,23 @@ namespace Soapstone.WebApi
                         .Build();
                 });
 
+            services.AddMvc()
+                .SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
+
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new Info { Title = "Soapstone-Backend", Version = "v1" });
+                c.AddSecurityDefinition("Bearer", new ApiKeyScheme
+                {
+                    In = "header",
+                    Description = "Please enter into field the word 'Bearer' following by space and JWT", 
+                    Name = "Authorization",
+                    Type = "apiKey"
+                });
+                c.AddSecurityRequirement(new Dictionary<string, IEnumerable<string>>
+                {
+                    { "Bearer", Enumerable.Empty<string>() },
+                });
 
                 var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
                 var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
@@ -98,8 +108,6 @@ namespace Soapstone.WebApi
             });
 
             // TODO serilog
-            // TODO mock mysql
-            // TODO first migration
             // TODO post lifespan on map
         }
 
@@ -114,8 +122,8 @@ namespace Soapstone.WebApi
                 c.RoutePrefix = string.Empty;
             });
 
-            app.UseMvc();
             app.UseAuthentication();
+            app.UseMvc();
         }
     }
 }

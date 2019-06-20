@@ -109,6 +109,8 @@ namespace Soapstone.WebApi
 
             // TODO serilog
             // TODO post lifespan on map
+            // TODO exception message overhaul
+            // TODO documentation overhaul
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

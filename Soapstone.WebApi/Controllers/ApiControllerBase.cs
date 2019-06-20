@@ -1,7 +1,8 @@
 using System;
-using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using Soapstone.WebApi.Security;
 
 namespace Soapstone.WebApi.Controllers
 {
@@ -44,5 +45,8 @@ namespace Soapstone.WebApi.Controllers
                 return BadRequest();
             }
         }
+
+        protected Guid GetUserId()
+            => Guid.Parse(User.Claims.First(c => c.Type == DefaultClaims.UserId).Value);
     }
 }

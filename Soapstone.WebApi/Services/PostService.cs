@@ -20,21 +20,23 @@ namespace Soapstone.WebApi.Services
             _postsRepository = postsRepository;
         }
 
-        public async Task<IEnumerable<PostViewModel>> GetNearbyPostsAsync(PostsPageInputModel inputModel)
+        public async Task<IEnumerable<PostViewModel>> GetNearbyPostsAsync(Guid userId, PostsPageInputModel inputModel)
         {
             if (inputModel == null)
                 throw new ArgumentNullException(nameof(inputModel));
 
             var skip = inputModel.Skip ?? PaginationDefaults.DefaultSkip;
             var take = inputModel.Take ?? PaginationDefaults.DefaultTake;
+            var latitude = inputModel.Latitude;
+            var longitude = inputModel.Longitude;
 
             var posts = await _postsRepository
                 .GetPageAsync(
                     p =>
-                        p.Latitude < inputModel.Latitude + inputModel.Latitude * 0.0005
-                        && p.Latitude > inputModel.Latitude - inputModel.Latitude * 0.0005
-                        && p.Longitude < inputModel.Longitude + inputModel.Longitude * 0.0005
-                        && p.Longitude > inputModel.Longitude - inputModel.Longitude * 0.0005,
+                        p.Latitude < latitude + (latitude * 0.0005)
+                        && p.Latitude > latitude - (latitude * 0.0005)
+                        && p.Longitude < longitude + (longitude * 0.0005)
+                        && p.Longitude > longitude - (longitude * 0.0005),
                     p => p.Rating,
                     p => p
                         .Include(e => e.Upvotes)
@@ -49,10 +51,10 @@ namespace Soapstone.WebApi.Services
             foreach (var post in posts)
             {
                 var viewModel = (PostViewModel) post;
-                viewModel.Upvoted = post.Upvotes.Any(u => u.UserId == inputModel.UserId);
-                viewModel.Downvoted = post.Downvotes.Any(d => d.UserId == inputModel.UserId);
-                viewModel.Saved = post.SavedBy.Any(s => s.UserId == inputModel.UserId);
-                viewModel.Reported = post.Upvotes.Any(r => r.UserId == inputModel.UserId);
+                viewModel.Upvoted = post.Upvotes.Any(u => u.UserId == userId);
+                viewModel.Downvoted = post.Downvotes.Any(d => d.UserId == userId);
+                viewModel.Saved = post.SavedBy.Any(s => s.UserId == userId);
+                viewModel.Reported = post.Upvotes.Any(r => r.UserId == userId);
             }
 
             return viewModels;

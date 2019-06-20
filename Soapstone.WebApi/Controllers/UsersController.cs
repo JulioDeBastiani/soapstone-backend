@@ -15,7 +15,6 @@ namespace Soapstone.WebApi.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    // TODO security
     public class UsersController : ApiControllerBase
     {
         private IRepository<User> _usersRepository;
@@ -85,8 +84,7 @@ namespace Soapstone.WebApi.Controllers
                 var skip = inputModel?.Skip ?? PaginationDefaults.DefaultSkip;
                 var take = inputModel?.Take ?? PaginationDefaults.DefaultTake;
 
-                // TODO order by descending
-                var posts = await _postsRepository.GetPageAsync(p => p.UserId == id, p => p.CreatedAt, skip, take);
+                var posts = await _postsRepository.GetPageDescendingAsync(p => p.UserId == id, p => p.CreatedAt, skip, take);
 
                 if (!posts.Any())
                     return NoContent();
@@ -108,8 +106,7 @@ namespace Soapstone.WebApi.Controllers
                 var skip = inputModel?.Skip ?? PaginationDefaults.DefaultSkip;
                 var take = inputModel?.Take ?? PaginationDefaults.DefaultTake;
 
-                // TODO order by descending
-                var posts = await _savedPostsRepository.GetPageAsync(p => p.UserId == id, p => p.CreatedAt, p => p.Include(e => e.Post), skip, take);
+                var posts = await _savedPostsRepository.GetPageDescendingAsync(p => p.UserId == id, p => p.CreatedAt, p => p.Include(e => e.Post), skip, take);
 
                 if (!posts.Any())
                     return NoContent();

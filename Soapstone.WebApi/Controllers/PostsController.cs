@@ -16,7 +16,6 @@ namespace Soapstone.WebApi.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    // TODO security
     public class PostsController : ApiControllerBase
     {
         private IRepository<Post> _postsRepository;
@@ -40,7 +39,8 @@ namespace Soapstone.WebApi.Controllers
         public Task<ActionResult<IEnumerable<PostViewModel>>> GetPostsAsync([FromQuery] PostsPageInputModel inputModel)
             => ExecuteAsync<IEnumerable<PostViewModel>>(async () =>
             {
-                var posts = await _postsService.GetNearbyPostsAsync(inputModel);
+                var userId = GetUserId();
+                var posts = await _postsService.GetNearbyPostsAsync(userId, inputModel);
 
                 if (!posts.Any())
                     return NoContent();
@@ -104,9 +104,9 @@ namespace Soapstone.WebApi.Controllers
                 if (post == null)
                     return NotFound();
 
-                var userId = User.Claims.First(c => c.Type == DefaultClaims.UserId).Value;
+                var userId = GetUserId();
 
-                if (post.UserId.ToString() != userId)
+                if (post.UserId != userId)
                     return BadRequest();
 
                 await _postsRepository.DeleteAsync(post);
@@ -123,7 +123,7 @@ namespace Soapstone.WebApi.Controllers
         public Task<ActionResult> UpvoteAsync(Guid id)
             => ExecuteAsync(async () =>
             {
-                var userId = Guid.Parse(User.Claims.First(c => c.Type == DefaultClaims.UserId).Value);
+                var userId = GetUserId();
                 await _postsService.UpvoteAsync(id, userId);
                 return Ok();
             });
@@ -138,7 +138,7 @@ namespace Soapstone.WebApi.Controllers
         public Task<ActionResult> DownvoteAsync(Guid id)
             => ExecuteAsync(async () =>
             {
-                var userId = Guid.Parse(User.Claims.First(c => c.Type == DefaultClaims.UserId).Value);
+                var userId = GetUserId();
                 await _postsService.DownvoteAsync(id, userId);
                 return Ok();
             });
@@ -153,7 +153,7 @@ namespace Soapstone.WebApi.Controllers
         public Task<ActionResult> SaveAsync(Guid id)
             => ExecuteAsync(async () =>
             {
-                var userId = Guid.Parse(User.Claims.First(c => c.Type == DefaultClaims.UserId).Value);
+                var userId = GetUserId();
                 await _postsService.SaveAsync(id, userId);
                 return Ok();
             });
@@ -168,7 +168,7 @@ namespace Soapstone.WebApi.Controllers
         public Task<ActionResult> ReportAsync(Guid id)
             => ExecuteAsync(async () =>
             {
-                var userId = Guid.Parse(User.Claims.First(c => c.Type == DefaultClaims.UserId).Value);
+                var userId = GetUserId();
                 await _postsService.ReportAsync(id, userId);
                 return Ok();
             });

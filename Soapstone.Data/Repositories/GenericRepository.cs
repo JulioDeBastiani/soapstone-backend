@@ -33,12 +33,11 @@ namespace Soapstone.Data
 
         public Task<int> DeleteAsync(TEntity entity)
         {
-            // TODO undeletable entities
+            // TODO undeletable entities/logical deletion
             _context.Set<TEntity>().Remove(entity);
             return _context.SaveChangesAsync();
         }
 
-        // TODO include if needed
         public Task<IEnumerable<TEntity>> GetPageAsync(Func<TEntity, bool> predicate, Func<TEntity, object> orderBy, Func<IQueryable<TEntity>, IIncludableQueryable<TEntity, object>> includes, int skip = PaginationDefaults.DefaultSkip, int take = PaginationDefaults.DefaultTake)
         {
             var query = _context.Set<TEntity>().AsQueryable();
@@ -55,6 +54,28 @@ namespace Soapstone.Data
 
             if (orderBy != null)
                 query = query.OrderBy(orderBy).AsQueryable();
+
+            return Task.FromResult(_context.Set<TEntity>().Skip(skip).Take(take).AsEnumerable());
+        }
+
+        public Task<IEnumerable<TEntity>> GetPageDescendingAsync(Func<TEntity, bool> predicate, Func<TEntity, object> orderBy, Func<IQueryable<TEntity>, IIncludableQueryable<TEntity, object>> includes, int skip = PaginationDefaults.DefaultSkip, int take = PaginationDefaults.DefaultTake)
+        {
+            if (orderBy == null)
+                throw new ArgumentNullException(nameof(orderBy));
+
+            var query = _context.Set<TEntity>().AsQueryable();
+
+            skip = skip < 0 ? 0 : skip;
+            take = take < 0 ? 0 : take;
+            take = take > PaginationDefaults.DefaultMaxTake ? PaginationDefaults.DefaultMaxTake : take;
+
+            if (predicate != null)
+                query = query.Where(predicate).AsQueryable();
+
+            if (includes != null)
+                query = includes(query);
+
+            query = query.OrderByDescending(orderBy).AsQueryable();
 
             return Task.FromResult(_context.Set<TEntity>().Skip(skip).Take(take).AsEnumerable());
         }

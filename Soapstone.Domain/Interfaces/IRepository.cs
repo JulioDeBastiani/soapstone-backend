@@ -13,6 +13,7 @@ namespace Soapstone.Domain.Interfaces
         Task<int> UpdateAsync(TEntity entity);
         Task<int> DeleteAsync(TEntity entity);
         Task<IEnumerable<TEntity>> GetPageAsync(Func<TEntity, bool> predicate, Func<TEntity, object> orderBy, Func<IQueryable<TEntity>, IIncludableQueryable<TEntity, object>> includes, int skip = PaginationDefaults.DefaultSkip, int take = PaginationDefaults.DefaultTake);
+        Task<IEnumerable<TEntity>> GetPageDescendingAsync(Func<TEntity, bool> predicate, Func<TEntity, object> orderBy, Func<IQueryable<TEntity>, IIncludableQueryable<TEntity, object>> includes, int skip = PaginationDefaults.DefaultSkip, int take = PaginationDefaults.DefaultTake);
         Task<IQueryable<TEntity>> GetQueryableAsync();
         Task<TEntity> GetByIdAsync(Guid id, Func<IQueryable<TEntity>, IIncludableQueryable<TEntity, object>> includes);
 

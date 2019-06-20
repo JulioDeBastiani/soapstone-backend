@@ -19,6 +19,7 @@ using Soapstone.Domain;
 using Soapstone.Domain.Interfaces;
 using Soapstone.WebApi.Security;
 using Soapstone.WebApi.Services;
+using Soapstone.WebApi.Settings;
 using Swashbuckle.AspNetCore.Swagger;
 
 namespace Soapstone.WebApi
@@ -47,7 +48,13 @@ namespace Soapstone.WebApi
             services.AddScoped<IRepository<Report>, GenericRepository<Report>>();
 
             services.AddScoped<PostService>();
+            services.AddScoped<ImageUploadService>();
             services.AddScoped<TokenService>();
+
+            var imageUploadSettings = new ImageUploadSettings();
+            var imageUploadConfigurator = new ConfigureFromConfigurationOptions<ImageUploadSettings>(_config.GetSection("ImageUploadSettings"));
+            imageUploadConfigurator.Configure(imageUploadSettings);
+            services.AddSingleton(imageUploadSettings);
 
             var tokenSettings = new TokenSettings();
             var tokenConfigurator = new ConfigureFromConfigurationOptions<TokenSettings>(_config.GetSection("TokenSettings"));

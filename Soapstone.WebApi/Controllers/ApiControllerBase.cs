@@ -14,16 +14,16 @@ namespace Soapstone.WebApi.Controllers
             {
                 return await functionAsync();
             }
-            catch (ArgumentException)
+            catch (ArgumentException e)
             {
                 // TODO log
-                return BadRequest();
+                return BadRequest(e.Message);
             }
-            catch (Exception)
+            catch (Exception e)
             {
                 // TODO log
                 // TODO change to 500
-                return BadRequest();
+                return BadRequest(e.Message);
             }
         }
 
@@ -33,16 +33,16 @@ namespace Soapstone.WebApi.Controllers
             {
                 return await functionAsync();
             }
-            catch (ArgumentException)
+            catch (ArgumentException e)
             {
                 // TODO log
-                return BadRequest();
+                return BadRequest(e.Message);
             }
-            catch (Exception)
+            catch (Exception e)
             {
                 // TODO log
                 // TODO change to 500
-                return BadRequest();
+                return BadRequest(e.Message);
             }
         }
 

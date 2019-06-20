@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Soapstone.Domain;
 using Soapstone.Domain.Defaults;
@@ -20,11 +21,13 @@ namespace Soapstone.WebApi.Controllers
     {
         private IRepository<Post> _postsRepository;
         private PostService _postsService;
+        private ImageUploadService _imageUploadService;
 
-        public PostsController(IRepository<Post> postsRepository, PostService postsService)
+        public PostsController(IRepository<Post> postsRepository, PostService postsService, ImageUploadService imageUploadService)
         {
             _postsRepository = postsRepository;
             _postsService = postsService;
+            _imageUploadService = imageUploadService;
         }
 
         /// <summary>
@@ -33,7 +36,6 @@ namespace Soapstone.WebApi.Controllers
         /// </summary>
         /// <param name="inputModel">Page and geolocation information</param>
         /// <returns></returns>
-        // TODO get user from claims
         [HttpGet]
         [Authorize]
         public Task<ActionResult<IEnumerable<PostViewModel>>> GetPostsAsync([FromQuery] PostsPageInputModel inputModel)
@@ -69,6 +71,15 @@ namespace Soapstone.WebApi.Controllers
                 return Ok(posts.Select(p => (PostViewModel) p));
             });
 
+        [HttpPost("image")]
+        [Authorize]
+        public Task<ActionResult<string>> PostImageAsync(IFormFile imageFile)
+            => ExecuteAsync<string>(async () =>
+            {
+                var fileName = await _imageUploadService.UploadImageAsync(imageFile);
+                return Ok(fileName);
+            });
+
         /// <summary>
         /// Creates a New Post
         /// </summary>
@@ -77,9 +88,12 @@ namespace Soapstone.WebApi.Controllers
         // TODO change reponse to created
         [HttpPost]
         [Authorize]
-        public Task<ActionResult<PostViewModel>> PostAsync([FromBody] PostInputModel inputModel)
+        public Task<ActionResult<PostViewModel>> PostAsync([FromBody] PostInputModel inputModel, IFormFile imageFile)
             => ExecuteAsync<PostViewModel>(async () =>
             {
+                if (imageFile != null)
+                    inputModel.ImageUrl = await _imageUploadService.UploadImageAsync(imageFile);
+
                 var post = (Post) inputModel;
 
                 if (await _postsRepository.AddAsync(post) != 1)

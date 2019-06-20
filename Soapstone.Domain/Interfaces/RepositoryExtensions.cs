@@ -32,6 +32,9 @@ namespace Soapstone.Domain.Interfaces
         public static async Task<bool> ExistsAsync<TEntity>(this IRepository<TEntity> repository, Guid id) where TEntity : Entity
             => (await repository.GetByIdAsync(id)) != null;
 
+        public static async Task<bool> AnyAsync<TEntity>(this IRepository<TEntity> repository, Func<TEntity, bool> predicate) where TEntity : Entity
+            => (await repository.GetQueryableAsync()).Any(predicate);
+
         public static async Task<TEntity> SingleOrDefaultAsync<TEntity>(this IRepository<TEntity> repository, Func<TEntity, bool> predicate) where TEntity : Entity
             => (await repository.GetQueryableAsync()).SingleOrDefault(predicate);
     }

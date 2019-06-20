@@ -23,7 +23,9 @@ namespace Soapstone.Domain
 
         public User(string username, string email, string password)
         {
-            // TODO validate username
+            if (string.IsNullOrWhiteSpace(username))
+                throw new ArgumentNullException(nameof(username));
+
             Username = username;
             Email = email;
             SetPassword(password);

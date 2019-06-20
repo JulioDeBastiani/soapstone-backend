@@ -124,6 +124,9 @@ namespace Soapstone.WebApi.Controllers
         public Task<ActionResult<UserViewModel>> PostAsync([FromBody] UserInputModel inputModel)
             => ExecuteAsync<UserViewModel>(async () =>
             {
+                if (await _usersRepository.AnyAsync(u => u.Username == inputModel.Username.Trim()))
+                    return BadRequest("Username already taken");
+
                 var user = (User) inputModel;
 
                 if (await _usersRepository.AddAsync(user) != 1)

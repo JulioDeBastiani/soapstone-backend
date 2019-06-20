@@ -71,13 +71,17 @@ namespace Soapstone.WebApi.Controllers
                 return Ok(posts.Select(p => (PostViewModel) p));
             });
 
+        /// <summary>
+        /// Uploads an image to use on a post
+        /// </summary>
+        /// <param name="imageFile">Image information</param>
+        /// <returns></returns>
         [HttpPost("image")]
         [Authorize]
-        public Task<ActionResult<string>> PostImageAsync(IFormFile imageFile)
-            => ExecuteAsync<string>(async () =>
-            {
-                var fileName = await _imageUploadService.UploadImageAsync(imageFile);
-                return Ok(fileName);
+        public Task<ActionResult<ImageViewModel>> PostImageAsync(IFormFile imageFile)
+            => ExecuteAsync<ImageViewModel>(async () =>
+            {;
+                return Ok(await _imageUploadService.UploadImageAsync(imageFile));
             });
 
         /// <summary>
@@ -88,13 +92,10 @@ namespace Soapstone.WebApi.Controllers
         // TODO change reponse to created
         [HttpPost]
         [Authorize]
-        public Task<ActionResult<PostViewModel>> PostAsync([FromBody] PostInputModel inputModel, IFormFile imageFile)
+        public Task<ActionResult<PostViewModel>> PostAsync([FromBody] PostInputModel inputModel)
             => ExecuteAsync<PostViewModel>(async () =>
             {
-                if (imageFile != null)
-                    inputModel.ImageUrl = await _imageUploadService.UploadImageAsync(imageFile);
-
-                var post = (Post) inputModel;
+                var post = new Post(GetUserId(), inputModel.Message, inputModel.ImageUrl, inputModel.Latitude, inputModel.Longitude);
 
                 if (await _postsRepository.AddAsync(post) != 1)
                     return BadRequest();

@@ -1,7 +1,8 @@
 using System;
 using System.IO;
-using System.Net;
 using System.Threading.Tasks;
+using CloudinaryDotNet;
+using CloudinaryDotNet.Actions;
 using Microsoft.AspNetCore.Http;
 using Soapstone.WebApi.Settings;
 using Soapstone.WebApi.ViewModels;
@@ -10,29 +11,37 @@ namespace Soapstone.WebApi.Services
 {
     public class ImageUploadService
     {
-        private string _uploadPath;
-        private string _accessPath;
+        private Cloudinary _cloudinary;
 
-        public ImageUploadService(ImageUploadSettings settings)
+        public ImageUploadService(CloudinarySettings settings)
         {
-            _uploadPath = settings.UploadPath;
-            _accessPath = settings.AccessPath;
+            var account = new Account(settings.CloudName, settings.ApiKey, settings.ApiSecret);
+            _cloudinary = new Cloudinary(account);
         }
 
-        public async Task<ImageViewModel> UploadImageAsync(IFormFile file)
+        public Task<ImageViewModel> UploadImageAsync(IFormFile file)
+            => Task.Run(() => UploadImage(file));
+
+        private ImageViewModel UploadImage(IFormFile file)
         {
             var extension = file.FileName.Split(".")[file.FileName.Split(".").Length - 1];
-            var fileName = $"{Guid.NewGuid()}.{extension}";
-            var path = Path.Combine(_uploadPath, fileName);
+            var fileName = $"{Guid.NewGuid().ToString("N")}.{extension}";
 
-            using (var stream = new FileStream(path, FileMode.Create))
-                await file.CopyToAsync(stream);
-
-            return new ImageViewModel
+            using (var stream = file.OpenReadStream())
             {
-                ImageUrl = $"{_accessPath}/{fileName}",
-                Size = file.Length
-            };
+                var uploadParams = new ImageUploadParams()
+                {
+                    File = new FileDescription(fileName, stream)
+                };
+
+                var result = _cloudinary.Upload(uploadParams);
+
+                return new ImageViewModel
+                {
+                    ImageUrl = $"res.cloudinary.com{result.SecureUri.AbsolutePath}",
+                    Size = result.Length
+                };
+            }
         }
     }
 }

@@ -52,10 +52,10 @@ namespace Soapstone.WebApi
             services.AddScoped<ImageUploadService>();
             services.AddScoped<TokenService>();
 
-            var imageUploadSettings = new ImageUploadSettings();
-            var imageUploadConfigurator = new ConfigureFromConfigurationOptions<ImageUploadSettings>(_config.GetSection("ImageUploadSettings"));
-            imageUploadConfigurator.Configure(imageUploadSettings);
-            services.AddSingleton(imageUploadSettings);
+            var cloudinarySettings = new CloudinarySettings();
+            var cloudinaryConfigurator = new ConfigureFromConfigurationOptions<CloudinarySettings>(_config.GetSection("CloudinarySettings"));
+            cloudinaryConfigurator.Configure(cloudinarySettings);
+            services.AddSingleton(cloudinarySettings);
 
             var tokenSettings = new TokenSettings();
             var tokenConfigurator = new ConfigureFromConfigurationOptions<TokenSettings>(_config.GetSection("TokenSettings"));

@@ -13,7 +13,4 @@ FROM microsoft/dotnet:2.2-aspnetcore-runtime
 WORKDIR /app
 COPY --from=build-env /app/Soapstone.WebApi/out .
 
-RUN useradd -m app
-USER app
-
 CMD ASPNETCORE_URLS=http://*:$PORT dotnet Soapstone.WebApi.dll

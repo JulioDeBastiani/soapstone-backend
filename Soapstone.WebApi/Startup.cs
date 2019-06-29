@@ -14,6 +14,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
 using Soapstone.Data;
 using Soapstone.Domain;
 using Soapstone.Domain.Interfaces;
@@ -38,7 +39,7 @@ namespace Soapstone.WebApi
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddDbContext<ApplicationDbContext>(op => op
-                .UseMySql(_config.GetConnectionString("Soapstone")));
+                .UseMySql(_config.GetConnectionString("Soapstone"), o => o.ServerVersion(new Version(5, 5), ServerType.MySql)));
 
             services.AddScoped<IRepository<User>, GenericRepository<User>>();
             services.AddScoped<IRepository<Post>, GenericRepository<Post>>();

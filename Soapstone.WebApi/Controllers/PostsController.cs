@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Soapstone.Domain;
 using Soapstone.Domain.Defaults;
 using Soapstone.Domain.Interfaces;
@@ -63,7 +64,7 @@ namespace Soapstone.WebApi.Controllers
                 var skip = inputModel?.Skip ?? PaginationDefaults.DefaultSkip;
                 var take = inputModel?.Take ?? PaginationDefaults.DefaultTake;
 
-                var posts = await _postsRepository.GetPageAsync(p => p.Rating, skip, take);
+                var posts = await _postsRepository.GetPageAsync(p => true, p => p.Rating, p => p.Include(e => e.User), skip, take);
 
                 if (!posts.Any())
                     return NoContent();

@@ -106,7 +106,7 @@ namespace Soapstone.WebApi.Controllers
                 var skip = inputModel?.Skip ?? PaginationDefaults.DefaultSkip;
                 var take = inputModel?.Take ?? PaginationDefaults.DefaultTake;
 
-                var posts = await _savedPostsRepository.GetPageDescendingAsync(p => p.UserId == id, p => p.CreatedAt, p => p.Include(e => e.Post), skip, take);
+                var posts = await _savedPostsRepository.GetPageDescendingAsync(p => p.UserId == id, p => p.CreatedAt, p => p.Include(e => e.Post).ThenInclude(e => e.User), skip, take);
 
                 if (!posts.Any())
                     return NoContent();

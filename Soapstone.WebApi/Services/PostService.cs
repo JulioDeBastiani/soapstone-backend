@@ -30,21 +30,39 @@ namespace Soapstone.WebApi.Services
             var latitude = inputModel.Latitude;
             var longitude = inputModel.Longitude;
 
-            var posts = await _postsRepository
-                .GetPageAsync(
-                    p =>
-                        p.Latitude < latitude + (latitude * 0.0005)
-                        && p.Latitude > latitude - (latitude * 0.0005)
-                        && p.Longitude < longitude + (longitude * 0.0005)
-                        && p.Longitude > longitude - (longitude * 0.0005),
-                    p => p.Rating,
-                    p => p
-                        .Include(e => e.Upvotes)
-                        .Include(e => e.Downvotes)
-                        .Include(e => e.SavedBy)
-                        .Include(e => e.Reports),
-                    skip,
-                    take);
+            // TODO por algum motivo o get page nao ta funcionando direito
+            // var posts = await _postsRepository
+            //     .GetPageAsync(
+            //         p =>
+            //             p.Latitude < latitude + (latitude * 0.0005)
+            //             && p.Latitude > latitude - (latitude * 0.0005)
+            //             && p.Longitude < longitude + (longitude * 0.0005)
+            //             && p.Longitude > longitude - (longitude * 0.0005),
+            //         p => p.Rating,
+            //         p => p
+            //             .Include(e => e.User)
+            //             .Include(e => e.Upvotes)
+            //             .Include(e => e.Downvotes)
+            //             .Include(e => e.SavedBy)
+            //             .Include(e => e.Reports),
+            //         skip,
+            //         take);
+
+            var posts = (await _postsRepository.GetQueryableAsync())
+                .Where(p =>
+                    p.Latitude < latitude + (latitude * ((latitude < 0) ? -0.0005 : 0.0005))
+                    && p.Latitude > latitude - (latitude * ((latitude < 0) ? -0.0005 : 0.0005))
+                    && p.Longitude < longitude + (longitude * ((longitude < 0) ? -0.0005 : 0.0005))
+                    && p.Longitude > longitude - (longitude * ((longitude < 0) ? -0.0005 : 0.0005)))
+                .OrderBy(p => p.Rating)
+                .Include(e => e.User)
+                .Include(e => e.Upvotes)
+                .Include(e => e.Downvotes)
+                .Include(e => e.SavedBy)
+                .Include(e => e.Reports)
+                .Skip(skip)
+                .Take(take)
+                .AsEnumerable();
 
             var viewModels = new List<PostViewModel>();
 
@@ -55,6 +73,7 @@ namespace Soapstone.WebApi.Services
                 viewModel.Downvoted = post.Downvotes.Any(d => d.UserId == userId);
                 viewModel.Saved = post.SavedBy.Any(s => s.UserId == userId);
                 viewModel.Reported = post.Upvotes.Any(r => r.UserId == userId);
+                viewModels.Add(viewModel);
             }
 
             return viewModels;

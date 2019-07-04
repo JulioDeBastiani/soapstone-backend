@@ -50,7 +50,7 @@ namespace Soapstone.Data
                 query = query.Where(predicate).AsQueryable();
 
             if (includes != null)
-                query = includes(query);
+                query = includes(query).AsQueryable();
 
             if (orderBy != null)
                 query = query.OrderBy(orderBy).AsQueryable();

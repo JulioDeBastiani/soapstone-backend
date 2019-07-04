@@ -7,6 +7,7 @@ namespace Soapstone.WebApi.ViewModels
     {
         public Guid Id { get; set; }
         public Guid UserId { get; set; }
+        public string Author { get; set; }
         public string Message { get; set; }
         public string ImageUrl { get; set;}
         public double Latitude { get; set; }
@@ -23,6 +24,7 @@ namespace Soapstone.WebApi.ViewModels
             {
                 Id = post.Id,
                 UserId = post.UserId,
+                Author = post.User?.Username,
                 Message = post.Message,
                 ImageUrl = post.ImageUrl,
                 Latitude = post.Latitude,
